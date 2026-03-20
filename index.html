@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الرقمية | Digital Library</title>
+    <!-- خطوط جوجل (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 20%);
+        }
+
+        /* --- Header & Glass UI --- */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cat-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- PDF Card Design --- */
+        .pdf-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .pdf-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .pdf-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #8b5cf6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pdf-card:hover::before {
+            opacity: 1;
+        }
+
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            transition: all 0.3s;
+        }
+
+        .pdf-card:hover .icon-box {
+            background: var(--primary-color);
+            color: white;
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .pdf-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: white;
+            line-height: 1.4;
+        }
+
+        .pdf-category {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.8rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.8rem;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-open {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-open:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-download {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+        }
+
+        .btn-download:hover {
+            border-color: white;
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        .footer-highlight {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header-content {
+                gap: 1rem;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fa-solid fa-book-open"></i> المكتبة الرقمية
+            </div>
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ابحث عن ملف...">
+                    <i class="fa-solid fa-search"></i>
+                </div>
+                <div class="categories" id="categoryContainer">
+                    <!-- سيتم توليد الأزرار هنا تلقائياً -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="grid-container" id="libraryGrid">
+            <!-- سيتم توليد الكروت هنا -->
+            <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">جاري تحميل الملفات...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>جميع الحقوق محفوظة &copy; 2024 | Programmer: <span class="footer-highlight">Ali Adnan</span></p>
+    </footer>
+
+    <script>
+        let allData = [];
+        let activeCategory = 'الكل';
+
+        // 1. جلب البيانات من ملف JSON
+        async function fetchData() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('فشل تحميل البيانات');
+                allData = await response.json();
+                
+                renderCategories();
+                renderLibrary(allData);
+            } catch (error) {
+                document.getElementById('libraryGrid').innerHTML = `
+                    <p style="color: #ef4444; text-align: center;">حدث خطأ في تحميل الملفات. تأكد من وجود ملف data.json.</p>
+                `;
+                console.error(error);
+            }
+        }
+
+        // 2. توليد أزرار التصنيفات تلقائياً
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            // استخراج التصنيفات الفريدة
+            const categories = ['الكل', ...new Set(allData.map(item => item.category))];
+            
+            container.innerHTML = categories.map(cat => `
+                <button class="cat-btn ${cat === activeCategory ? 'active' : ''}" 
+                        onclick="filterByCategory('${cat}')">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        // 3. عرض الكروت (Cards)
+        function renderLibrary(data) {
+            const grid = document.getElementById('libraryGrid');
+            
+            if (data.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">لا توجد ملفات مطابقة للبحث.</p>';
+                return;
+            }
+
+            grid.innerHTML = data.map(item => `
+                <div class="pdf-card">
+                    <div class="icon-box">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div class="pdf-category">${item.category}</div>
+                    <h3 class="pdf-title">${item.title}</h3>
+                    <div class="actions">
+                        <a href="${item.link}" target="_blank" class="btn btn-open">
+                            <i class="fa-solid fa-eye"></i> فتح
+                        </a>
+                        <a href="${item.link}" download class="btn btn-download">
+                            <i class="fa-solid fa-download"></i> تحميل
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 4. وظيفة التصفية حسب التصنيف
+        window.filterByCategory = function(category) {
+            activeCategory = category;
+            
+            // تحديث شكل الأزرار
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === category);
+            });
+
+            // تصفية البيانات
+            if (category === 'الكل') {
+                renderLibrary(allData);
+            } else {
+                const filtered = allData.filter(item => item.category === category);
+                renderLibrary(filtered);
+            }
+        };
+
+        // 5. وظيفة البحث
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allData.filter(item => 
+                item.title.toLowerCase().includes(term) || 
+                item.category.toLowerCase().includes(term)
+            );
+            renderLibrary(filtered);
+        });
+
+        // تشغيل الدالة عند التحميل
+        fetchData();
+
+    </script>
+</body>
+</html>
